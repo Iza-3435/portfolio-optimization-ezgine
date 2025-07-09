@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio Intelligence Pro - Advanced Analysis</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --black: #000000;
+            --dark-gray: #1a1a1a;
+            --gray: #666666;
+            --light-gray: #cccccc;
+            --lighter-gray: #f5f5f5;
+            --white: #ffffff;
+            --success: #22c55e;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --purple: #8b5cf6;
+            --indigo: #6366f1;
+        }
+        
+        [data-theme="dark"] {
+            --black: #ffffff;
+            --dark-gray: #f3f4f6;
+            --gray: #9ca3af;
+            --light-gray: #374151;
+            --lighter-gray: #1f2937;
+            --white: #111827;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: var(--white);
+            color: var(--black);
+            line-height: 1.6;
+            font-weight: 400;
+            min-height: 100vh;
+            transition: all 0.3s ease;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 24px;
+        }
+        
+        .header {
+            margin-bottom: 60px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .header h1 {
+            font-size: 42px;
+            font-weight: 300;
+            letter-spacing: -0.03em;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            font-size: 16px;
+            color: var(--gray);
+            font-weight: 400;
+        }
+        
+        .header-controls {
+            position: absolute;
+            top: 0;
+            right: 0;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        
+        .theme-toggle {
+            background: var(--lighter-gray);
+            border: 1px solid var(--light-gray);
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 12px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+        
+        .theme-toggle:hover {
+            background: var(--light-gray);
+        }
+        
+        .card {
+            background: var(--white);
+            border: 1px solid var(--light-gray);
+            margin-bottom: 32px;
+            padding: 32px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 24px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .card-actions {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+            border: 1px solid var(--light-gray);
+            background: var(--white);
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-small:hover {
+            background: var(--lighter-gray);
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 24px;
+            position: relative;
+        }
+        
+        .input {
+            flex: 1;
+            padding: 14px 20px;
+            border: 1px solid var(--black);
+            background: var(--white);
+            font-size: 15px;
+            transition: all 0.2s ease;
+            border-radius: 4px;
+        }
+        
+        .input:focus {
+            outline: none;
+            background: var(--lighter-gray);
+        }
+        
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--white);
+            border: 1px solid var(--light-gray);
+            border-top: none;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+            border-radius: 0 0 4px 4px;
+        }
+        
+        .search-result {
+            padding: 12px 20px;
+            cursor: pointer;
+            border-bottom: 1px solid var(--lighter-gray);
+            transition: background 0.2s ease;
+        }
+        
+        .search-result:hover {
+            background: var(--lighter-gray);
+        }
+        
+        .search-result:last-child {
+            border-bottom: none;
+        }
+        
+        .search-symbol {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .search-name {
+            font-size: 14px;
+            color: var(--gray);
+        }
+        
+        .btn {
+            padding: 14px 32px;
+            border: 1px solid var(--black);
+            background: var(--white);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-radius: 4px;
+        }
+        
+        .btn:hover {
+            background: var(--black);
+            color: var(--white);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .btn-primary {
+            background: var(--black);
+            color: var(--white);
+        }
+        
+        .btn-primary:hover {
+            background: var(--dark-gray);
+        }
+        
+        .btn-export {
+            background: var(--success);
+            color: white;
+            border-color: var(--success);
+        }
+        
+        .btn-export:hover {
+            background: #16a34a;
+        }
+        
+        .stock-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 32px;
+            min-height: 40px;
+        }
+        
+        .stock-tag {
+            background: var(--black);
+            color: var(--white);
+            padding: 8px 20px;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            letter-spacing: 0.02em;
+            border-radius: 4px;
+        }
+        
+        .stock-tag .price {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+        
+        .stock-tag .change {
+            font-size: 12px;
+            padding: 2px 6px;
+            border-radius: 2px;
+        }
+        
+        .stock-tag .change.positive {
+            background: var(--success);
+            color: white;
+        }
+        
+        .stock-tag .change.negative {
+            background: var(--danger);
+            color: white;
+        }
+        
+        .remove-btn {
+            background: transparent;
+            border: none;
+            color: var(--white);
+            cursor: pointer;
+            font-size: 18px;
+            line-height: 1;
+            opacity: 0.7;
+            transition: opacity 0.2s ease;
+        }
+        
+        .remove-btn:hover {
+            opacity: 1;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        
+        .optimization-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+            padding: 20px;
+            background: var(--lighter-gray);
+            border-radius: 6px;
+        }
+        
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .control-group label {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--gray);
+        }
+        
+        .control-group select,
+        .control-group input {
+            padding: 8px 12px;
+            border: 1px solid var(--light-gray);
+            background: var(--white);
+            font-size: 14px;
+            border-radius: 4px;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 32px;
+            margin-bottom: 48px;
+            border-bottom: 1px solid var(--light-gray);
+            overflow-x: auto;
+        }
+        
+        .tab {
+            padding: 16px 0;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--gray);
+            border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+        }
+        
+        .tab.active {
+            color: var(--black);
+            border-bottom-color: var(--black);
+        }
+        
+        .tab:hover:not(.active) {
+            color: var(--black);
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 24px;
+            margin-bottom: 48px;
+        }
+        
+        .metric-card {
+            text-align: center;
+            padding: 24px;
+            border: 1px solid var(--light-gray);
+            border-radius: 6px;
+            position: relative;
+        }
+        
+        .metric-value {
+            font-size: 36px;
+            font-weight: 300;
+            margin-bottom: 8px;
+            letter-spacing: -0.02em;
+        }
+        
+        .metric-label {
+            font-size: 12px;
+            color: var(--gray);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-weight: 500;
+        }
+        
+        .metric-trend {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            font-size: 12px;
+            padding: 2px 6px;
+            border-radius: 2px;
+        }
+        
+        .positive { color: var(--success); }
+        .negative { color: var(--danger); }
+        
+        .chart-wrapper {
+            margin-bottom: 48px;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 320px;
+            margin-bottom: 16px;
+        }
+        
+        .chart-small {
+            height: 240px;
+        }
+        
+        .chart-description {
+            font-size: 14px;
+            color: var(--gray);
+            line-height: 1.5;
+            padding: 0 8px;
+        }
+        
+        .portfolio-comparison {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+        
+        .portfolio-card {
+            border: 1px solid var(--light-gray);
+            padding: 20px;
+            border-radius: 6px;
+            position: relative;
+        }
+        
+        .portfolio-card.active {
+            border-color: var(--info);
+            background: rgba(59, 130, 246, 0.05);
+        }
+        
+        .portfolio-name {
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .portfolio-metrics {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            font-size: 14px;
+        }
+        
+        .backtest-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+            padding: 20px;
+            background: var(--lighter-gray);
+            border-radius: 6px;
+        }
+        
+        .stress-test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 24px;
+        }
+        
+        .stress-scenario {
+            border: 1px solid var(--light-gray);
+            padding: 20px;
+            border-radius: 6px;
+        }
+        
+        .scenario-name {
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--danger);
+        }
+        
+        .scenario-impact {
+            font-size: 24px;
+            font-weight: 300;
+            margin-bottom: 8px;
+        }
+        
+        .scenario-description {
+            font-size: 14px;
+            color: var(--gray);
+        }
+        
+        .signals-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+        }
+        
+        .signal-card {
+            border: 1px solid var(--light-gray);
+            padding: 24px;
+            border-radius: 6px;
+        }
+        
+        .signal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        
+        .signal-symbol {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .signal-badge {
+            padding: 6px 16px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border: 1px solid;
+            border-radius: 4px;
+        }
+        
+        .signal-buy {
+            color: var(--success);
+            border-color: var(--success);
+            background: rgba(34, 197, 94, 0.1);
+        }
+        
+        .signal-sell {
+            color: var(--danger);
+            border-color: var(--danger);
+            background: rgba(239, 68, 68, 0.1);
+        }
+        
+        .signal-hold {
+            color: var(--gray);
+            border-color: var(--gray);
+            background: rgba(102, 102, 102, 0.1);
+        }
+        
+        .signal-metrics {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        
+        .signal-metric {
+            text-align: center;
+        }
+        
+        .signal-metric-value {
+            font-size: 20px;
+            font-weight: 300;
+            margin-bottom: 4px;
+        }
+        
+        .signal-metric-label {
+            font-size: 11px;
+            color: var(--gray);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .allocation-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .allocation-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--lighter-gray);
+        }
+        
+        .allocation-item:last-child {
+            border-bottom: none;
+        }
+        
+        .allocation-symbol {
+            font-weight: 500;
+            font-size: 16px;
+        }
+        
+        .allocation-weight {
+            font-size: 16px;
+            font-weight: 300;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 80px 24px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.95);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 2px solid var(--lighter-gray);
+            border-top: 2px solid var(--black);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 24px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .status {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            padding: 16px 24px;
+            font-size: 14px;
+            font-weight: 500;
+            transform: translateY(100px);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+            background: var(--black);
+            color: var(--white);
+            border-radius: 4px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .status.show {
+            transform: translateY(0);
+        }
+        
+        .status-error {
+            background: var(--danger);
+        }
+        
+        .status-warning {
+            background: var(--warning);
+        }
+        
+        .status-info {
+            background: var(--info);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: var(--gray);
+            font-size: 14px;
+        }
+        
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 32px;
+        }
+        
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 32px;
+        }
+        
+        .backend-status {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            padding: 8px 16px;
+            font-size: 12px;
+            font-weight: 500;
+            background: var(--lighter-gray);
+            border: 1px solid var(--light-gray);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--danger);
+        }
+        
+        .status-indicator.connected {
+            background: var(--success);
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: var(--lighter-gray);
+            margin: 16px 0;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: var(--black);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .correlation-matrix {
+            overflow: hidden;
+            background: var(--white);
+        }
+        
+        .correlation-matrix canvas {
+            max-width: 100%;
+            height: auto !important;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 24px 16px;
+            }
+            
+            .header h1 {
+                font-size: 32px;
+            }
+            
+            .header-controls {
+                position: static;
+                justify-content: center;
+                margin-top: 16px;
+            }
+            
+            .input-group {
+                flex-direction: column;
+            }
+            
+            .actions {
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+            
+            .grid-2, .grid-3 {
+                grid-template-columns: 1fr;
+            }
+            
+            .optimization-controls {
+                grid-template-columns: 1fr;
+            }
+            
+            .tabs {
+                gap: 24px;
+            }
+            
+            .backend-status {
+                top: 12px;
+                right: 12px;
+                font-size: 11px;
+                padding: 6px 12px;
+            }
+            
+            .portfolio-comparison {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="backend-status">
+        <span class="status-indicator" id="backend-indicator"></span>
+        <span id="backend-text">Checking backend...</span>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <div class="header-controls">
+                <button class="theme-toggle" onclick="toggleTheme()">🌙 Dark Mode</button>
+                <button class="btn-small" onclick="exportToPDF()">📄 Export PDF</button>
+                <button class="btn-small" onclick="savePortfolio()">💾 Save Portfolio</button>
+            </div>
+            <h1>Portfolio Intelligence Pro</h1>
+            <p>Advanced portfolio analysis with real-time data and professional-grade analytics</p>
+        </div>
+
+        <!-- Enhanced Stock Selection -->
+        <div class="card">
+            <div class="card-title">
+                Portfolio Construction
+                <div class="card-actions">
+                    <button class="btn-small" onclick="loadTemplate('growth')">Growth Template</button>
+                    <button class="btn-small" onclick="loadTemplate('conservative')">Conservative Template</button>
+                    <button class="btn-small" onclick="loadTemplate('dividend')">Dividend Template</button>
+                </div>
+            </div>
+            
+            <div class="input-group">
+                <input type="text" 
+                       class="input" 
+                       id="stock-input" 
+                       placeholder="Enter stock symbol (e.g., AAPL) or search by name"
+                       onkeyup="handleSearch(event)"
+                       onkeypress="handleEnterKey(event)">
+                <div class="search-results" id="search-results"></div>
+                <button class="btn btn-primary" onclick="addStock()">Add Stock</button>
+            </div>
+            
+            <div class="stock-tags" id="selected-stocks">
+                <div class="empty-state">No stocks selected</div>
+            </div>
+            
+            <div class="optimization-controls">
+                <div class="control-group">
+                    <label for="optimization-method">Optimization Method</label>
+                    <select id="optimization-method">
+                        <option value="max_sharpe">Maximum Sharpe Ratio</option>
+                        <option value="min_volatility">Minimum Volatility</option>
+                        <option value="equal_weight">Equal Weight</option>
+                        <option value="risk_parity">Risk Parity</option>
+                        <option value="max_diversification">Maximum Diversification</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label for="risk-tolerance">Risk Tolerance</label>
+                    <select id="risk-tolerance">
+                        <option value="conservative">Conservative</option>
+                        <option value="moderate" selected>Moderate</option>
+                        <option value="aggressive">Aggressive</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label for="rebalance-frequency">Rebalancing</label>
+                    <select id="rebalance-frequency">
+                        <option value="monthly">Monthly</option>
+                        <option value="quarterly" selected>Quarterly</option>
+                        <option value="annually">Annually</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label for="max-weight">Max Asset Weight (%)</label>
+                    <input type="number" id="max-weight" value="40" min="10" max="100">
+                </div>
+            </div>
+            
+            <div class="actions">
+                <button class="btn btn-primary" onclick="analyzePortfolio()" id="analyze-btn">Analyze Portfolio</button>
+                <button class="btn" onclick="runBacktest()">📈 Backtest</button>
+                <button class="btn" onclick="runStressTest()">⚠️ Stress Test</button>
+                <button class="btn" onclick="loadSamplePortfolio()">Load Sample</button>
+                <button class="btn" onclick="clearAllStocks()">Clear All</button>
+            </div>
+            
+            <div class="progress-bar" id="progress-bar" style="display: none;">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+        </div>
+
+        <!-- Portfolio Comparison -->
+        <div class="card" id="portfolio-comparison-section" style="display: none;">
+            <div class="card-title">Portfolio Comparison</div>
+            <div class="portfolio-comparison" id="portfolio-comparison">
+                <!-- Portfolio cards will be populated here -->
+            </div>
+        </div>
+
+        <!-- Analysis Section -->
+        <div id="analysis-section" style="display: none;">
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab('overview')">Overview</div>
+                <div class="tab" onclick="switchTab('performance')">Performance</div>
+                <div class="tab" onclick="switchTab('allocation')">Allocation</div>
+                <div class="tab" onclick="switchTab('risk')">Risk Analysis</div>
+                <div class="tab" onclick="switchTab('backtest')">Backtesting</div>
+                <div class="tab" onclick="switchTab('stress')">Stress Testing</div>
+            </div>
+
+            <!-- Enhanced Overview Panel -->
+            <div id="overview-panel" class="tab-panel">
+                <div class="card">
+                    <div class="card-title">Portfolio Metrics</div>
+                    <div class="metrics-grid" id="metrics-grid">
+                        <!-- Enhanced metrics will be populated here -->
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">Technical Signals & Market Intelligence</div>
+                    <div class="signals-grid" id="trading-signals">
+                        <!-- Enhanced signals will be populated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Enhanced Performance Panel -->
+            <div id="performance-panel" class="tab-panel" style="display: none;">
+                <div class="card">
+                    <div class="card-title">Historical Performance Analysis</div>
+                    <div class="chart-wrapper">
+                        <div class="chart-container">
+                            <canvas id="performance-chart"></canvas>
+                        </div>
+                        <p class="chart-description">
+                            Portfolio value evolution with benchmark comparison and performance attribution.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="grid-3">
+                    <div class="card">
+                        <div class="card-title">Rolling Metrics</div>
+                        <div class="chart-wrapper">
+                            <div class="chart-container chart-small">
+                                <canvas id="rolling-metrics-chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-title">Drawdown Analysis</div>
+                        <div class="chart-wrapper">
+                            <div class="chart-container chart-small">
+                                <canvas id="drawdown-chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-title">Performance Attribution</div>
+                        <div class="chart-wrapper">
+                            <div class="chart-container chart-small">
+                                <canvas id="attribution-chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Enhanced Allocation Panel -->
+            <div id="allocation-panel" class="tab-panel" style="display: none;">
+                <div class="grid-2">
+                    <div class="card">
+                        <div class="card-title">Optimized Allocation</div>
+                        <div class="chart-wrapper">
+                            <div class="chart-container chart-small">
+                                <canvas id="allocation-chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-title">
+                            Weight Distribution
+                            <div class="card-actions">
+                                <button class="btn-small" onclick="rebalancePortfolio()">⚖️ Rebalance</button>
+                            </div>
+                        </div>
+                        <div class="allocation-list" id="allocation-list">
